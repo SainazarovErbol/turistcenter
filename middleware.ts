@@ -9,7 +9,7 @@ export const config = {
     "/",
     // Enable all paths with locales
     "/(ru|en|ky)/:path*",
-    // Exclude static files and api routes
-    "/((?!_next|_vercel|.*\\..*).*)",
+    // Exclude static files, api routes and internal paths
+    "/((?!_next|_vercel|api|.*\\..*).*)",
   ],
 };

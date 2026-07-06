@@ -174,7 +174,7 @@ export default function PlacesClient({ attractions }: Props) {
                           <span>{localized.bestSeason}</span>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {place.reviewCount.toLocaleString()} {t("reviews")}
+                          {place.reviewCount.toLocaleString(locale)} {t("reviews")}
                         </span>
                       </div>
                     </div>
