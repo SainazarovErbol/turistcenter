@@ -1,5 +1,9 @@
+"use client";
+
 import { Star, ThumbsUp } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import type { Review } from "@/data/reviews";
+import { getLocalizedCountry, localeToDateLocale, type AppLocale } from "@/lib/content";
 
 interface ReviewCardProps {
   review: Review;
@@ -46,18 +50,18 @@ function AuthorAvatar({ name }: { name: string }) {
   );
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("ru-RU", {
+export default function ReviewCard({ review }: ReviewCardProps) {
+  const t = useTranslations("placePage");
+  const locale = useLocale() as AppLocale;
+
+  const formattedDate = new Date(review.date).toLocaleDateString(localeToDateLocale(locale), {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-}
 
-export default function ReviewCard({ review }: ReviewCardProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-3">
-      {/* Header */}
       <div className="flex items-start gap-3">
         <AuthorAvatar name={review.authorName} />
         <div className="flex-1 min-w-0">
@@ -66,20 +70,18 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <StarRating rating={review.rating} />
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {review.authorCountry} · {formatDate(review.date)}
+            {getLocalizedCountry(review.authorCountry, locale)} · {formattedDate}
           </p>
         </div>
       </div>
 
-      {/* Text */}
       <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
         {review.text}
       </p>
 
-      {/* Footer */}
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1 border-t border-border">
         <ThumbsUp className="h-3.5 w-3.5" />
-        <span>{review.helpful} нашли полезным</span>
+        <span>{review.helpful} {t("helpful")}</span>
       </div>
     </div>
   );

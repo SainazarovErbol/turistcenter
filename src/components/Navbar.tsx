@@ -1,22 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Menu, X, Globe, Map } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import { Menu, X, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const navLinks = [
-  { label: "Карта", href: "/#map" },
-  { label: "Достопримечательности", href: "/places" },
-  { label: "Туры", href: "/tours" },
-  { label: "Отзывы", href: "/#reviews" },
+const locales = [
+  { code: "ru", label: "RU" },
+  { code: "en", label: "EN" },
+  { code: "ky", label: "KY" },
 ];
 
-const languages = ["RU", "EN", "KY"];
-
 export default function Navbar() {
+  const t = useTranslations("nav");
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [lang, setLang] = useState("RU");
+
+  const navLinks = [
+    { label: t("map"), href: "/#map" as const },
+    { label: t("places"), href: "/places" as const },
+    { label: t("tours"), href: "/tours" as const },
+    { label: t("reviews"), href: "/#reviews" as const },
+  ];
+
+  const switchLocale = (newLocale: string) => {
+    router.replace(pathname, { locale: newLocale });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
@@ -50,28 +62,28 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             {/* Language switcher */}
             <div className="flex items-center gap-0.5 border border-border rounded-lg p-0.5">
-              {languages.map((l) => (
+              {locales.map(({ code, label }) => (
                 <button
-                  key={l}
-                  onClick={() => setLang(l)}
+                  key={code}
+                  onClick={() => switchLocale(code)}
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                    lang === l
+                    locale === code
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {l}
+                  {label}
                 </button>
               ))}
             </div>
-            <Button size="sm">Запланировать поездку</Button>
+            <Button size="sm">{t("plan")}</Button>
           </div>
 
           {/* Mobile menu button */}
           <button
             className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Меню"
+            aria-label={t("menu")}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -91,8 +103,24 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          {/* Mobile locale switcher */}
+          <div className="flex gap-1 pt-2 px-3">
+            {locales.map(({ code, label }) => (
+              <button
+                key={code}
+                onClick={() => { switchLocale(code); setMenuOpen(false); }}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors border ${
+                  locale === code
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "text-muted-foreground border-border hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="pt-2">
-            <Button size="sm" className="w-full">Запланировать поездку</Button>
+            <Button size="sm" className="w-full">{t("plan")}</Button>
           </div>
         </div>
       )}

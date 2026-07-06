@@ -1,26 +1,33 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { MapPin, Layers, ZoomIn, Mountain } from "lucide-react";
-import { attractions, categoryLabels, categoryColors, type Attraction } from "@/data/attractions";
+import { attractions, categoryColors, type Attraction } from "@/data/attractions";
+import { getLocalizedPlace, type AppLocale } from "@/lib/content";
 
 const categoryIcons: Record<string, string> = {
-  lake:    "🏞",
-  nature:  "🌿",
+  lake: "🏞",
+  nature: "🌿",
   history: "🏛",
-  sport:   "⛰",
+  sport: "⛰",
   culture: "🏙",
 };
 
 const categoryMarkerColors: Record<string, string> = {
-  lake:    "#3b82f6",
-  nature:  "#22c55e",
+  lake: "#3b82f6",
+  nature: "#22c55e",
   history: "#f59e0b",
-  sport:   "#f97316",
+  sport: "#f97316",
   culture: "#a855f7",
 };
 
 export default function InteractiveMap() {
+  const t = useTranslations("map");
+  const tCat = useTranslations("categories");
+  const locale = useLocale() as AppLocale;
+  const reviewsLabel = t("reviews");
+
   const mapContainer = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
@@ -53,14 +60,12 @@ export default function InteractiveMap() {
   };
 
   useEffect(() => {
-    // Флаг отмены — предотвращает двойную инициализацию в React Strict Mode
     let cancelled = false;
 
     const initMap = async () => {
       try {
         const mapboxgl = (await import("mapbox-gl")).default;
 
-        // Если cleanup уже запустился — не инициализируем
         if (cancelled || !mapContainer.current) return;
 
         const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -81,7 +86,6 @@ export default function InteractiveMap() {
           antialias: true,
         });
 
-        // Если cleanup запустился пока создавали карту — убираем
         if (cancelled) {
           map.remove();
           return;
@@ -96,7 +100,6 @@ export default function InteractiveMap() {
 
           map.resize();
 
-          // 3D рельеф
           map.addSource("mapbox-dem", {
             type: "raster-dem",
             url: "mapbox://mapbox.mapbox-terrain-dem-v1",
@@ -105,7 +108,6 @@ export default function InteractiveMap() {
           });
           map.setTerrain({ source: "mapbox-dem", exaggeration: 1.8 });
 
-          // Атмосфера
           map.setFog({
             color: "rgb(220, 235, 255)",
             "high-color": "rgb(100, 160, 230)",
@@ -114,16 +116,14 @@ export default function InteractiveMap() {
             "star-intensity": 0.15,
           });
 
-          // Маркеры
           attractions.forEach((place) => {
+            const localized = getLocalizedPlace(place, locale);
             const color = categoryMarkerColors[place.category] ?? "#3b82f6";
             const icon = categoryIcons[place.category] ?? "📍";
 
-            // Обёртка — Mapbox позиционирует её, трансформаций нет
             const wrapper = document.createElement("div");
             wrapper.style.cssText = "cursor:pointer;";
 
-            // Визуальный маркер — круг с иконкой, hover через filter
             const el = document.createElement("div");
             el.style.cssText = [
               "width:38px", "height:38px",
@@ -153,13 +153,13 @@ export default function InteractiveMap() {
             const popup = new mapboxgl.Popup({ offset: 30, closeButton: false, maxWidth: "240px" })
               .setHTML(`
                 <div style="font-family:system-ui,sans-serif;padding:4px">
-                  <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#111">${place.nameRu}</div>
-                  <div style="font-size:11px;color:#666;margin-bottom:6px">${place.region}</div>
-                  <div style="font-size:12px;color:#444;line-height:1.4">${place.description.slice(0, 90)}…</div>
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#111">${localized.name}</div>
+                  <div style="font-size:11px;color:#666;margin-bottom:6px">${localized.region}</div>
+                  <div style="font-size:12px;color:#444;line-height:1.4">${localized.description.slice(0, 90)}…</div>
                   <div style="margin-top:8px;display:flex;align-items:center;gap:4px">
                     <span style="color:#f59e0b;font-size:12px">★</span>
                     <span style="font-size:12px;font-weight:600">${place.rating}</span>
-                    <span style="font-size:11px;color:#888">(${place.reviewCount} отзывов)</span>
+                    <span style="font-size:11px;color:#888">(${place.reviewCount} ${reviewsLabel})</span>
                   </div>
                 </div>
               `);
@@ -177,7 +177,6 @@ export default function InteractiveMap() {
           console.error("[Map error]", e);
           if (!cancelled) setMapError(true);
         });
-
       } catch (e) {
         console.error("[Map init error]", e);
         if (!cancelled) setMapError(true);
@@ -195,31 +194,28 @@ export default function InteractiveMap() {
       setMapLoaded(false);
       setMapError(false);
     };
-  }, []);
+  }, [locale, reviewsLabel]);
 
   return (
     <section id="map" className="py-20 bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-sm font-medium text-primary mb-2">Исследуй страну</p>
+          <p className="text-sm font-medium text-primary mb-2">{t("label")}</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
-            Интерактивная карта
+            {t("title")}
           </h2>
-          <p className="mt-2 text-muted-foreground">Выбирай регион, приближай карту и открывай новые места</p>
+          <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Карта */}
           <div className="lg:col-span-2 relative rounded-xl overflow-hidden border border-border" style={{ height: 500 }}>
-            {/* Пустой контейнер для Mapbox */}
             <div ref={mapContainer} style={{ position: "absolute", inset: 0 }} />
 
-            {/* Оверлеи — отдельный слой, не внутри mapContainer */}
             <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10 }}>
               {!mapLoaded && !mapError && (
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "var(--muted)", pointerEvents: "auto" }}>
                   <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                  <p className="text-sm text-muted-foreground">Загрузка карты...</p>
+                  <p className="text-sm text-muted-foreground">{t("loading")}</p>
                 </div>
               )}
 
@@ -228,8 +224,8 @@ export default function InteractiveMap() {
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                     <MapPin className="h-6 w-6 text-primary" />
                   </div>
-                  <p className="font-medium text-foreground">Карта недоступна</p>
-                  <p className="text-sm text-muted-foreground">Проверьте токен в .env.local и перезапустите сервер</p>
+                  <p className="font-medium text-foreground">{t("unavailable")}</p>
+                  <p className="text-sm text-muted-foreground">{t("tokenHint")}</p>
                 </div>
               )}
 
@@ -242,60 +238,61 @@ export default function InteractiveMap() {
                   }`}
                 >
                   <Mountain className="h-3.5 w-3.5" />
-                  3D рельеф
+                  {t("terrain3d")}
                 </button>
               )}
 
               {mapLoaded && (
                 <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-background/80 backdrop-blur-sm border border-border rounded-lg px-2.5 py-1.5">
                   <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Колёсико для зума · Клик на маркер</span>
+                  <span className="text-xs text-muted-foreground">{t("hint")}</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Сайдбар */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-3">
               <Layers className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Места на карте</span>
+              <span className="text-sm font-medium text-muted-foreground">{t("placesOnMap")}</span>
             </div>
-            {attractions.map((place) => (
-              <button
-                key={place.id}
-                onClick={() => handleSelect(place)}
-                className={`w-full text-left rounded-xl border p-3 transition-all ${
-                  selected?.id === place.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/30"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-2">
-                    <span className="text-base leading-none mt-0.5">{categoryIcons[place.category]}</span>
-                    <div>
-                      <p className="text-sm font-medium leading-snug">{place.nameRu}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{place.region}</p>
+            {attractions.map((place) => {
+              const localized = getLocalizedPlace(place, locale);
+              return (
+                <button
+                  key={place.id}
+                  onClick={() => handleSelect(place)}
+                  className={`w-full text-left rounded-xl border p-3 transition-all ${
+                    selected?.id === place.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/30"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-base leading-none mt-0.5">{categoryIcons[place.category]}</span>
+                      <div>
+                        <p className="text-sm font-medium leading-snug">{localized.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{localized.region}</p>
+                      </div>
                     </div>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${categoryColors[place.category]}`}>
+                      {tCat(place.category)}
+                    </span>
                   </div>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${categoryColors[place.category]}`}>
-                    {categoryLabels[place.category]}
-                  </span>
-                </div>
-                {selected?.id === place.id && (
-                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 pl-6">{place.description}</p>
-                )}
-              </button>
-            ))}
+                  {selected?.id === place.id && (
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2 pl-6">{localized.description}</p>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Легенда */}
         {mapLoaded && (
           <div className="mt-4 flex flex-wrap gap-3">
             {Object.entries(categoryMarkerColors).map(([cat, color]) => (
               <div key={cat} className="flex items-center gap-1.5">
                 <div className="h-3 w-3 rounded-full" style={{ background: color }} />
-                <span className="text-xs text-muted-foreground">{categoryLabels[cat as keyof typeof categoryLabels]}</span>
+                <span className="text-xs text-muted-foreground">{tCat(cat as keyof typeof categoryIcons)}</span>
               </div>
             ))}
           </div>

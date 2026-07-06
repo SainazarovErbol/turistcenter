@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Star, PenLine, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReviewCard, { StarRating } from "@/components/ReviewCard";
@@ -16,6 +17,8 @@ interface ReviewsListProps {
 const INITIAL_SHOW = 4;
 
 export default function ReviewsList({ placeId, placeName, overallRating, reviewCount }: ReviewsListProps) {
+  const t = useTranslations("placePage");
+  const locale = useLocale();
   const [showAll, setShowAll] = useState(false);
   const [filterRating, setFilterRating] = useState<number | null>(null);
 
@@ -27,31 +30,33 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
     : allReviews;
 
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_SHOW);
+  const dateLocale = locale === "ru" ? "ru-RU" : locale === "ky" ? "ky-KG" : "en-US";
 
   return (
     <section id="reviews" className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">
-          Отзывы{" "}
-          <span className="text-muted-foreground font-normal text-base">({reviewCount.toLocaleString("ru-RU")})</span>
+          {t("reviewsTitle")}{" "}
+          <span className="text-muted-foreground font-normal text-base">
+            ({reviewCount.toLocaleString(dateLocale)})
+          </span>
         </h2>
         <Button size="sm" className="gap-1.5">
           <PenLine className="h-3.5 w-3.5" />
-          Написать отзыв
+          {t("writeReview")}
         </Button>
       </div>
 
-      {/* Rating summary */}
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-          {/* Big score */}
           <div className="text-center shrink-0">
             <p className="text-5xl font-bold text-foreground">{overallRating}</p>
             <StarRating rating={Math.round(overallRating)} />
-            <p className="text-xs text-muted-foreground mt-1">на основе {allReviews.length} отзывов</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("basedOnReviews", { count: allReviews.length })}
+            </p>
           </div>
 
-          {/* Distribution bars */}
           <div className="flex-1 w-full space-y-1.5">
             {[5, 4, 3, 2, 1].map((star) => {
               const count = distribution[star] || 0;
@@ -79,21 +84,19 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
           </div>
         </div>
 
-        {/* Active filter badge */}
         {filterRating && (
           <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Фильтр:</span>
+            <span className="text-sm text-muted-foreground">{t("filterLabel")}</span>
             <button
               onClick={() => setFilterRating(null)}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
             >
-              {filterRating} <Star className="h-3 w-3 fill-primary" /> · Сбросить ×
+              {filterRating} <Star className="h-3 w-3 fill-primary" /> · {t("resetFilter")}
             </button>
           </div>
         )}
       </div>
 
-      {/* Review cards */}
       {visible.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {visible.map((review) => (
@@ -102,11 +105,10 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
         </div>
       ) : (
         <div className="text-center py-10 text-muted-foreground text-sm">
-          Отзывов с оценкой {filterRating}★ пока нет
+          {t("noReviewsWithRating", { rating: filterRating ?? 0 })}
         </div>
       )}
 
-      {/* Show more button */}
       {!showAll && filtered.length > INITIAL_SHOW && (
         <div className="text-center">
           <button
@@ -114,29 +116,31 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
             <ChevronDown className="h-4 w-4" />
-            Показать ещё {filtered.length - INITIAL_SHOW} отзывов
+            {t("showMoreCount", { count: filtered.length - INITIAL_SHOW })}
           </button>
         </div>
       )}
 
-      {/* Write review placeholder form */}
       <WriteReviewForm placeName={placeName} />
     </section>
   );
 }
 
 function WriteReviewForm({ placeName }: { placeName: string }) {
+  const t = useTranslations("placePage");
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  const ratingLabels = ["", t("r1"), t("r2"), t("r3"), t("r4"), t("r5")];
+
   if (submitted) {
     return (
       <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
-        <p className="text-green-700 font-medium mb-1">Спасибо за отзыв!</p>
-        <p className="text-sm text-green-600">Он будет опубликован после модерации.</p>
+        <p className="text-green-700 font-medium mb-1">{t("thankYou")}</p>
+        <p className="text-sm text-green-600">{t("afterModeration")}</p>
       </div>
     );
   }
@@ -144,10 +148,10 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
   if (!open) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
-        <p className="text-sm text-muted-foreground mb-3">Вы были здесь? Поделитесь впечатлениями</p>
+        <p className="text-sm text-muted-foreground mb-3">{t("shareText")}</p>
         <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setOpen(true)}>
           <PenLine className="h-3.5 w-3.5" />
-          Написать отзыв о «{placeName}»
+          {t("openFormText")} «{placeName}»
         </Button>
       </div>
     );
@@ -155,11 +159,10 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-      <h3 className="font-semibold text-foreground">Ваш отзыв о «{placeName}»</h3>
+      <h3 className="font-semibold text-foreground">{t("formTitle")} «{placeName}»</h3>
 
-      {/* Star picker */}
       <div>
-        <p className="text-sm text-muted-foreground mb-2">Оценка</p>
+        <p className="text-sm text-muted-foreground mb-2">{t("ratingLabel")}</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((i) => (
             <button
@@ -179,21 +182,18 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
             </button>
           ))}
           {rating > 0 && (
-            <span className="ml-2 text-sm text-muted-foreground">
-              {["", "Ужасно", "Плохо", "Нормально", "Хорошо", "Отлично"][rating]}
-            </span>
+            <span className="ml-2 text-sm text-muted-foreground">{ratingLabels[rating]}</span>
           )}
         </div>
       </div>
 
-      {/* Text */}
       <div>
-        <p className="text-sm text-muted-foreground mb-2">Расскажите о поездке</p>
+        <p className="text-sm text-muted-foreground mb-2">{t("textLabel")}</p>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={4}
-          placeholder="Что понравилось? Что стоит знать другим туристам?"
+          placeholder={t("textPlaceholder")}
           className="w-full px-3 py-2.5 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none transition-shadow"
         />
       </div>
@@ -204,10 +204,10 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
           disabled={rating === 0 || text.length < 10}
           onClick={() => setSubmitted(true)}
         >
-          Отправить отзыв
+          {t("submit")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
-          Отмена
+          {t("cancel")}
         </Button>
       </div>
     </div>
