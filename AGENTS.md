@@ -50,6 +50,7 @@
 - [x] API Routes: GET /api/places, GET /api/tours, GET /api/reviews/[placeId], POST /api/reviews ✅
 - [x] Страницы /places, /tours, /places/[id] получают данные из БД (Server Components) ✅
 - [x] Форма отзывов сохраняет в БД через POST /api/reviews (isApproved=false, после модерации) ✅
+- [x] Админ-панель ✅ — /admin/login, /admin/reviews, /admin/places, /admin/tours
 - [ ] Партнёрский портал для туроператоров
 - [ ] Мультиязычность (i18n: ru/en/ky) — next-intl уже установлен
 - [ ] Аналитика (Plausible или Vercel Analytics)
@@ -113,6 +114,26 @@ turistcenter/
 └── .env.local                  # MAPBOX_TOKEN + DATABASE_URL
 ```
 
+## Админ-панель
+
+URL: `/admin` → редирект на `/admin/reviews`
+Пароль: переменная `ADMIN_PASSWORD` в `.env.local` и Vercel env vars
+
+| Страница | Функционал |
+|---|---|
+| `/admin/login` | Вход по паролю (cookie-сессия, 7 дней) |
+| `/admin/reviews` | Одобрить / Скрыть / Удалить отзывы |
+| `/admin/places` | Список мест, показать/скрыть, удалить |
+| `/admin/places/new` | Форма добавления нового места |
+| `/admin/tours` | Список туров, показать/скрыть, удалить |
+| `/admin/tours/new` | Форма добавления нового тура |
+
+Структура: `src/app/admin/(protected)/` — защищённые страницы (проверка cookie в layout).
+`src/app/admin/login/` — страница входа (без проверки, вне route group).
+Actions: `src/lib/admin/actions.ts` — Server Actions для всех операций.
+
+---
+
 ## Команды БД
 
 ```bash
@@ -167,4 +188,4 @@ npm run db:studio     # Drizzle Studio — визуальный просмотр
 
 ---
 
-*Последнее обновление: 6 июля 2026 — БД подключена (Neon + Drizzle ORM), API Routes готовы, страницы работают с реальными данными, форма отзывов сохраняет в БД*
+*Последнее обновление: 6 июля 2026 — Админ-панель готова (/admin): вход по паролю, модерация отзывов, управление местами и турами (добавление, публикация, удаление)*

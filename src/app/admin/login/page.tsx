@@ -8,41 +8,68 @@ export default async function LoginPage({ searchParams }: Props) {
   const { error } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "#f8f9fa", fontFamily: "Inter, system-ui, sans-serif" }}
+    >
+      <div className="w-full max-w-xs">
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-12 h-12 rounded-xl bg-primary items-center justify-center mb-4">
-            <span className="text-primary-foreground text-xl font-bold">T</span>
+          <div
+            className="inline-flex w-11 h-11 rounded-xl items-center justify-center mb-3 text-white font-bold text-lg"
+            style={{ background: "#0f766e" }}
+          >
+            T
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Админ-панель</h1>
-          <p className="text-sm text-muted-foreground mt-1">Turistcenter Kyrgyzstan</p>
+          <h1 className="text-xl font-semibold" style={{ color: "#111827" }}>
+            Панель управления
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "#6b7280" }}>
+            Turistcenter Kyrgyzstan
+          </p>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+        {/* Form */}
+        <div
+          className="rounded-2xl p-6"
+          style={{ background: "#fff", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+        >
           <form action={loginAction} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label
+                className="block text-sm font-medium mb-1.5"
+                style={{ color: "#374151" }}
+              >
                 Пароль
               </label>
               <input
                 type="password"
                 name="password"
                 required
-                placeholder="Введите пароль"
-                className="w-full px-3 py-2.5 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                placeholder="••••••••"
                 autoFocus
+                className="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
+                style={{
+                  border: "1px solid #d1d5db",
+                  background: "#fff",
+                  color: "#111827",
+                }}
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Неверный пароль. Попробуйте снова.
+              <p
+                className="text-sm px-3 py-2 rounded-lg"
+                style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
+              >
+                Неверный пароль
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full py-2.5 px-4 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+              className="w-full py-2.5 px-4 text-sm font-medium rounded-lg text-white transition-opacity hover:opacity-90"
+              style={{ background: "#0f766e" }}
             >
               Войти
             </button>
