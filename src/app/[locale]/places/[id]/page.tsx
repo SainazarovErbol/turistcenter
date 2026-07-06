@@ -5,24 +5,18 @@ import { ArrowLeft, MapPin, Clock, Mountain, ChevronRight, Map } from "lucide-re
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { attractions, tours, categoryColors } from "@/data/attractions";
+import { categoryColors } from "@/data/attractions";
 import ReviewsList from "@/components/ReviewsList";
 import { getLocalizedPlace, getLocalizedTour, localeToDateLocale, type AppLocale } from "@/lib/content";
+import { getPlaceBySlug, getToursByPlaceSlug, getReviewsByPlaceSlug } from "@/lib/db/queries";
 
 interface Props {
   params: Promise<{ id: string; locale: string }>;
 }
 
-export async function generateStaticParams() {
-  const locales = ["ru", "en", "ky"];
-  return locales.flatMap((locale) =>
-    attractions.map((a) => ({ locale, id: a.id }))
-  );
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id, locale } = await params;
-  const place = attractions.find((a) => a.id === id);
+  const place = await getPlaceBySlug(id);
   const t = await getTranslations({ locale, namespace: "placePage" });
   if (!place) return { title: t("notFound") };
   const localized = getLocalizedPlace(place, locale as AppLocale);
@@ -42,22 +36,19 @@ const difficultyColors = {
 export default async function PlaceDetailPage({ params }: Props) {
   const { id, locale: localeParam } = await params;
   const locale = localeParam as AppLocale;
-  const place = attractions.find((a) => a.id === id);
+
+  const [place, relatedTours, reviews] = await Promise.all([
+    getPlaceBySlug(id),
+    getToursByPlaceSlug(id),
+    getReviewsByPlaceSlug(id),
+  ]);
+
   if (!place) notFound();
 
   const t = await getTranslations("placePage");
   const tCat = await getTranslations("categories");
   const tTours = await getTranslations("tours");
   const localized = getLocalizedPlace(place, locale);
-
-  const relatedTours = tours
-    .filter((tour) =>
-      tour.highlights.some((h) =>
-        h.toLowerCase().includes(place.nameRu.split(" ")[0].toLowerCase()) ||
-        h.toLowerCase().includes(place.name.split(" ")[0].toLowerCase())
-      ) || ["kyrgyzstan-grand", "silk-road"].includes(tour.id)
-    )
-    .slice(0, 3);
 
   const mapsUrl = `https://www.google.com/maps?q=${place.coordinates[1]},${place.coordinates[0]}`;
 
@@ -193,6 +184,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               placeName={localized.name}
               overallRating={place.rating}
               reviewCount={place.reviewCount}
+              initialReviews={reviews}
             />
           </div>
 

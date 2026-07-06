@@ -1,29 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Star, PenLine, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReviewCard, { StarRating } from "@/components/ReviewCard";
-import { getReviewsByPlace, getRatingDistribution } from "@/data/reviews";
+import type { Review } from "@/data/reviews";
 
 interface ReviewsListProps {
   placeId: string;
   placeName: string;
   overallRating: number;
   reviewCount: number;
+  initialReviews?: Review[];
 }
 
 const INITIAL_SHOW = 4;
 
-export default function ReviewsList({ placeId, placeName, overallRating, reviewCount }: ReviewsListProps) {
+function getRatingDistribution(reviews: Review[]): Record<number, number> {
+  const dist: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach((r) => { dist[r.rating] = (dist[r.rating] || 0) + 1; });
+  return dist;
+}
+
+export default function ReviewsList({
+  placeId,
+  placeName,
+  overallRating,
+  reviewCount,
+  initialReviews = [],
+}: ReviewsListProps) {
   const t = useTranslations("placePage");
   const locale = useLocale();
   const [showAll, setShowAll] = useState(false);
   const [filterRating, setFilterRating] = useState<number | null>(null);
+  const [allReviews, setAllReviews] = useState<Review[]>(initialReviews);
 
-  const allReviews = getReviewsByPlace(placeId);
-  const distribution = getRatingDistribution(placeId);
+  const distribution = useMemo(() => getRatingDistribution(allReviews), [allReviews]);
 
   const filtered = filterRating
     ? allReviews.filter((r) => r.rating === filterRating)
@@ -31,6 +44,10 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
 
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_SHOW);
   const dateLocale = locale === "ru" ? "ru-RU" : locale === "ky" ? "ky-KG" : "en-US";
+
+  function handleNewReview(review: Review) {
+    setAllReviews((prev) => [review, ...prev]);
+  }
 
   return (
     <section id="reviews" className="space-y-6">
@@ -121,20 +138,63 @@ export default function ReviewsList({ placeId, placeName, overallRating, reviewC
         </div>
       )}
 
-      <WriteReviewForm placeName={placeName} />
+      <WriteReviewForm placeId={placeId} placeName={placeName} onSubmitted={handleNewReview} />
     </section>
   );
 }
 
-function WriteReviewForm({ placeName }: { placeName: string }) {
+interface WriteReviewFormProps {
+  placeId: string;
+  placeName: string;
+  onSubmitted: (review: Review) => void;
+}
+
+function WriteReviewForm({ placeId, placeName, onSubmitted }: WriteReviewFormProps) {
   const t = useTranslations("placePage");
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [text, setText] = useState("");
+  const [author, setAuthor] = useState("");
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const ratingLabels = ["", t("r1"), t("r2"), t("r3"), t("r4"), t("r5")];
+
+  async function handleSubmit() {
+    if (rating === 0 || text.trim().length < 10 || !author.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placeId, author: author.trim(), rating, text: text.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "Ошибка при отправке");
+        return;
+      }
+      // Показываем оптимистично в UI (pending approval)
+      onSubmitted({
+        id: `temp-${Date.now()}`,
+        placeId,
+        authorName: author.trim(),
+        authorCountry: "",
+        rating,
+        text: text.trim(),
+        date: new Date().toISOString().split("T")[0],
+        helpful: 0,
+      });
+      setSubmitted(true);
+    } catch {
+      setError("Ошибка сети. Попробуйте ещё раз.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (submitted) {
     return (
@@ -188,6 +248,17 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
       </div>
 
       <div>
+        <p className="text-sm text-muted-foreground mb-2">Ваше имя</p>
+        <input
+          type="text"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          placeholder="Имя или псевдоним"
+          className="w-full px-3 py-2.5 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+        />
+      </div>
+
+      <div>
         <p className="text-sm text-muted-foreground mb-2">{t("textLabel")}</p>
         <textarea
           value={text}
@@ -198,13 +269,15 @@ function WriteReviewForm({ placeName }: { placeName: string }) {
         />
       </div>
 
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
       <div className="flex gap-2">
         <Button
           size="sm"
-          disabled={rating === 0 || text.length < 10}
-          onClick={() => setSubmitted(true)}
+          disabled={rating === 0 || text.length < 10 || !author.trim() || loading}
+          onClick={handleSubmit}
         >
-          {t("submit")}
+          {loading ? "Отправка..." : t("submit")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
           {t("cancel")}

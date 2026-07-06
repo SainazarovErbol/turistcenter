@@ -44,12 +44,14 @@
 - [x] Mapbox токен в .env.local: NEXT_PUBLIC_MAPBOX_TOKEN
 
 **Приоритеты Фазы 2:**
-- [ ] Деплой на Vercel (домен turistcenter.kg)
-- [ ] База данных PostgreSQL + PostGIS (Railway)
-- [ ] API: Fastify backend для реальных данных
-- [ ] Реальная форма отзывов (сохранение в БД)
+- [x] Деплой на Vercel ✅
+- [x] База данных PostgreSQL — Drizzle ORM + Neon ✅
+- [x] `npm run db:push` + `npm run db:seed` выполнены ✅ (6 мест, 8 туров, 15 отзывов)
+- [x] API Routes: GET /api/places, GET /api/tours, GET /api/reviews/[placeId], POST /api/reviews ✅
+- [x] Страницы /places, /tours, /places/[id] получают данные из БД (Server Components) ✅
+- [x] Форма отзывов сохраняет в БД через POST /api/reviews (isApproved=false, после модерации) ✅
 - [ ] Партнёрский портал для туроператоров
-- [ ] Мультиязычность (i18n: ru/en/ky)
+- [ ] Мультиязычность (i18n: ru/en/ky) — next-intl уже установлен
 - [ ] Аналитика (Plausible или Vercel Analytics)
 - [ ] Больше мест (20+) и туров (30+)
 
@@ -64,9 +66,9 @@
 | Карта | Mapbox GL JS | ✅ Токен в .env.local |
 | Иконки | lucide-react | ✅ Работает |
 | Backend | Node.js + Fastify | ⏳ Не начат |
-| БД | PostgreSQL + PostGIS | ⏳ Не начата |
+| БД | PostgreSQL (Neon) + Drizzle ORM | 🔧 Schema готова, нужен DATABASE_URL |
 | ИИ | OpenAI API | 🔜 Фаза 3 |
-| Хостинг | Vercel + Railway | ⏳ Не настроен |
+| Хостинг | Vercel | ✅ Задеплоен |
 
 ---
 
@@ -106,7 +108,19 @@ turistcenter/
 │       └── reviews.ts          # 15 отзывов, getReviewsByPlace, getFeaturedReviews
 ├── next.config.ts
 ├── AGENTS.md
-└── .env.local                  # NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
+├── drizzle/                    # SQL миграции (генерируются drizzle-kit)
+├── drizzle.config.ts           # Drizzle конфиг (подключается к Neon)
+└── .env.local                  # MAPBOX_TOKEN + DATABASE_URL
+```
+
+## Команды БД
+
+```bash
+npm run db:generate   # Сгенерировать SQL миграцию из schema.ts
+npm run db:push       # Применить schema к БД напрямую (dev)
+npm run db:migrate    # Запустить миграции (prod)
+npm run db:seed       # Наполнить БД мок-данными из src/data/
+npm run db:studio     # Drizzle Studio — визуальный просмотр БД
 ```
 
 ## Важные детали
@@ -153,4 +167,4 @@ turistcenter/
 
 ---
 
-*Последнее обновление: 28 июня 2026 — Фаза 1 полностью завершена*
+*Последнее обновление: 6 июля 2026 — БД подключена (Neon + Drizzle ORM), API Routes готовы, страницы работают с реальными данными, форма отзывов сохраняет в БД*
