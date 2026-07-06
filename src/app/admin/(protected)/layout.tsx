@@ -15,7 +15,7 @@ const navLinks = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session");
-  const isAuth = session?.value === process.env.ADMIN_PASSWORD;
+  const isAuth = session?.value === "admin-ok";
 
   if (!isAuth) redirect("/admin/login");
 

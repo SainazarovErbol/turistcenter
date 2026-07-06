@@ -7,15 +7,22 @@ import { Star, Check, X, Trash2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const rows = await db
-    .select({
-      review: reviews,
-      placeSlug: places.slug,
-      placeName: places.nameRu,
-    })
-    .from(reviews)
-    .innerJoin(places, eq(reviews.placeId, places.id))
-    .orderBy(desc(reviews.createdAt));
+  let rows: { review: typeof reviews.$inferSelect; placeSlug: string; placeName: string }[] = [];
+  let dbError: string | null = null;
+
+  try {
+    rows = await db
+      .select({
+        review: reviews,
+        placeSlug: places.slug,
+        placeName: places.nameRu,
+      })
+      .from(reviews)
+      .innerJoin(places, eq(reviews.placeId, places.id))
+      .orderBy(desc(reviews.createdAt));
+  } catch (e) {
+    dbError = e instanceof Error ? e.message : "Ошибка подключения к базе данных";
+  }
 
   const pending = rows.filter((r) => !r.review.isApproved);
   const approved = rows.filter((r) => r.review.isApproved);
@@ -30,6 +37,15 @@ export default async function AdminReviewsPage() {
           Одобрено: <span className="font-semibold text-green-600">{approved.length}</span>
         </p>
       </div>
+
+      {dbError && (
+        <div className="mb-6 px-4 py-3 rounded-lg text-sm" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}>
+          <strong>Ошибка БД:</strong> {dbError}
+          <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>
+            Убедитесь, что переменная <code>DATABASE_URL</code> добавлена в Vercel → Settings → Environment Variables.
+          </p>
+        </div>
+      )}
 
       {/* Ожидают одобрения */}
       {pending.length > 0 && (

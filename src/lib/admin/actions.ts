@@ -9,13 +9,18 @@ import { redirect } from "next/navigation";
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+const SESSION_VALUE = "admin-ok";
+
 export async function loginAction(formData: FormData) {
-  const password = formData.get("password") as string;
-  if (password === process.env.ADMIN_PASSWORD) {
+  const password = (formData.get("password") as string ?? "").trim();
+  const expected = (process.env.ADMIN_PASSWORD ?? "").trim();
+
+  if (expected && password === expected) {
     const cookieStore = await cookies();
-    cookieStore.set("admin_session", password, {
+    cookieStore.set("admin_session", SESSION_VALUE, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 дней
       path: "/",
     });
