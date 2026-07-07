@@ -1,8 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { Star, Quote } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
-import { getFeaturedReviews } from "@/data/reviews";
-import { attractions } from "@/data/attractions";
+import { getFeaturedReviews, getPlaces, getSiteStats } from "@/lib/db/queries";
 import { getLocalizedPlace, getLocalizedCountry, type AppLocale } from "@/lib/content";
 
 function AuthorAvatar({ name }: { name: string }) {
@@ -23,7 +22,13 @@ function AuthorAvatar({ name }: { name: string }) {
 export default async function ReviewsSection() {
   const t = await getTranslations("reviewsSection");
   const locale = (await getLocale()) as AppLocale;
-  const featured = getFeaturedReviews(6);
+  const [featured, places, stats] = await Promise.all([
+    getFeaturedReviews(6),
+    getPlaces(),
+    getSiteStats(),
+  ]);
+
+  const avgRatingDisplay = stats.avgRating > 0 ? String(stats.avgRating) : "—";
 
   return (
     <section id="reviews" className="py-20 bg-muted/30">
@@ -38,7 +43,7 @@ export default async function ReviewsSection() {
 
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
           {featured.map((review) => {
-            const place = attractions.find((a) => a.id === review.placeId);
+            const place = places.find((a) => a.id === review.placeId);
             const placeName = place ? getLocalizedPlace(place, locale).name : "";
             return (
               <div key={review.id} className="break-inside-avoid rounded-xl border border-border bg-card p-5 space-y-3">
@@ -68,10 +73,10 @@ export default async function ReviewsSection() {
 
         <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {[
-            { value: "4.8", label: t("avgRating") },
-            { value: "9 700+", label: t("totalReviews") },
-            { value: "63", label: t("countries") },
-            { value: "98%", label: t("recommend") },
+            { value: avgRatingDisplay, label: t("avgRating") },
+            { value: stats.reviews.toLocaleString(locale), label: t("totalReviews") },
+            { value: String(stats.places), label: t("statsPlaces") },
+            { value: String(stats.tours), label: t("statsTours") },
           ].map(({ value, label }) => (
             <div key={label} className="rounded-xl border border-border bg-card p-5">
               <p className="text-2xl font-bold text-primary mb-1">{value}</p>

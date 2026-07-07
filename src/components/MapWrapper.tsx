@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { Attraction } from "@/data/attractions";
 
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
@@ -13,6 +14,10 @@ const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ),
 });
 
-export default function MapWrapper() {
-  return <InteractiveMap />;
+interface Props {
+  places: Attraction[];
+}
+
+export default function MapWrapper({ places }: Props) {
+  return <InteractiveMap places={places} />;
 }

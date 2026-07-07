@@ -5,15 +5,18 @@ import MapWrapper from "@/components/MapWrapper";
 import ToursSection from "@/components/ToursSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import Footer from "@/components/Footer";
+import { getPlaces } from "@/lib/db/queries";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const places = await getPlaces();
+
   return (
     <>
       <Navbar />
       <main>
         <Hero />
-        <FeaturedPlaces />
-        <MapWrapper />
+        <FeaturedPlaces places={places} />
+        <MapWrapper places={places} />
         <ToursSection />
         <ReviewsSection />
       </main>

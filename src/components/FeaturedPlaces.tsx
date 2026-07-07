@@ -1,17 +1,22 @@
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { Star, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Star, MapPin, Clock, ArrowRight, Eye } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { attractions, categoryColors, type Category } from "@/data/attractions";
+import { categoryColors, type Attraction, type Category } from "@/data/attractions";
 import { getLocalizedPlace, type AppLocale } from "@/lib/content";
 
-export default async function FeaturedPlaces() {
+interface Props {
+  places: Attraction[];
+}
+
+export default async function FeaturedPlaces({ places }: Props) {
   const t = await getTranslations("featured");
   const tCat = await getTranslations("categories");
   const locale = (await getLocale()) as AppLocale;
 
   const categoryKeys: Category[] = ["lake", "nature", "history", "sport", "culture"];
+  const featured = places.slice(0, 6);
 
   return (
     <section id="places" className="py-20 bg-background">
@@ -38,7 +43,7 @@ export default async function FeaturedPlaces() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {attractions.map((place) => {
+          {featured.map((place) => {
             const localized = getLocalizedPlace(place, locale);
             return (
               <Link key={place.id} href={`/places/${place.id}`}>
@@ -56,7 +61,9 @@ export default async function FeaturedPlaces() {
                       <h3 className="font-semibold text-foreground leading-snug">{localized.name}</h3>
                       <div className="flex items-center gap-1 shrink-0">
                         <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{place.rating}</span>
+                        <span className="text-sm font-medium">
+                          {place.reviewCount > 0 ? place.rating : "—"}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
@@ -64,14 +71,20 @@ export default async function FeaturedPlaces() {
                       <span>{localized.region}</span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{localized.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>{localized.bestSeason}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {place.reviewCount.toLocaleString()} {t("reviews")}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {place.reviewCount > 0 && (
+                          <span>{place.reviewCount} {t("reviews")}</span>
+                        )}
+                        <span className="flex items-center gap-0.5">
+                          <Eye className="h-3 w-3" />
+                          {(place.viewCount ?? 0).toLocaleString(locale)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </article>

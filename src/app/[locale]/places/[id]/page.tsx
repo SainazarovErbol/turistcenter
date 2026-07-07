@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { categoryColors } from "@/data/attractions";
 import ReviewsList from "@/components/ReviewsList";
 import { getLocalizedPlace, getLocalizedTour, localeToDateLocale, type AppLocale } from "@/lib/content";
-import { getPlaceBySlug, getToursByPlaceSlug, getReviewsByPlaceSlug } from "@/lib/db/queries";
+import { getPlaceBySlug, getToursByPlaceSlug, getReviewsByPlaceSlug, incrementPlaceViews } from "@/lib/db/queries";
 
 interface Props {
   params: Promise<{ id: string; locale: string }>;
@@ -44,6 +44,9 @@ export default async function PlaceDetailPage({ params }: Props) {
   ]);
 
   if (!place) notFound();
+
+  await incrementPlaceViews(id);
+  place.viewCount = (place.viewCount ?? 0) + 1;
 
   const t = await getTranslations("placePage");
   const tCat = await getTranslations("categories");
@@ -95,12 +98,23 @@ export default async function PlaceDetailPage({ params }: Props) {
                   {localized.name}
                 </h1>
               </div>
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+              <div className="flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
                 <div>
-                  <p className="text-white font-bold text-lg leading-none">{place.rating}</p>
-                  <p className="text-white/70 text-xs">
-                    {place.reviewCount.toLocaleString(localeToDateLocale(locale))} {t("reviews")}
+                  <p className="text-white font-bold text-lg leading-none">
+                    {place.reviewCount > 0 ? place.rating : "—"}
                   </p>
+                  <p className="text-white/70 text-xs">
+                    {place.reviewCount > 0
+                      ? `${place.reviewCount} ${t("reviews")}`
+                      : t("noReviewsYet")}
+                  </p>
+                </div>
+                <div className="w-px h-8 bg-white/20" />
+                <div>
+                  <p className="text-white font-bold text-lg leading-none">
+                    {(place.viewCount ?? 0).toLocaleString(localeToDateLocale(locale))}
+                  </p>
+                  <p className="text-white/70 text-xs">{t("views")}</p>
                 </div>
               </div>
             </div>
@@ -182,8 +196,10 @@ export default async function PlaceDetailPage({ params }: Props) {
             <ReviewsList
               placeId={place.id}
               placeName={localized.name}
-              overallRating={place.rating}
-              reviewCount={place.reviewCount}
+              overallRating={reviews.length > 0
+                ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+                : 0}
+              reviewCount={reviews.length}
               initialReviews={reviews}
             />
           </div>

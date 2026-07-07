@@ -53,6 +53,7 @@ export const places = pgTable(
     longDescriptionKy: text("long_description_ky"),         // KY
     rating: real("rating").notNull().default(0),
     reviewCount: integer("review_count").notNull().default(0),
+    viewCount: integer("view_count").notNull().default(0),
     imageUrl: text("image_url"),
     gallery: jsonb("gallery").$type<string[]>().default([]),
     // Координаты хранятся как обычные числа (PostGIS добавим позже через миграцию)
@@ -87,6 +88,7 @@ export const tours = pgTable(
     currency: varchar("currency", { length: 10 }).notNull().default("USD"),
     rating: real("rating").notNull().default(0),
     reviewCount: integer("review_count").notNull().default(0),
+    viewCount: integer("view_count").notNull().default(0),
     imageUrl: text("image_url"),
     highlights: jsonb("highlights").$type<string[]>().default([]),
     operator: varchar("operator", { length: 200 }),

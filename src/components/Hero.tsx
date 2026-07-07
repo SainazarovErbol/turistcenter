@@ -1,9 +1,13 @@
 import { Search, MapPin, Star, Users } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
+import { getSiteStats } from "@/lib/db/queries";
 
 export default async function Hero() {
   const t = await getTranslations("hero");
   const locale = await getLocale();
+  const stats = await getSiteStats();
+
+  const fmt = (n: number) => n.toLocaleString(locale);
 
   return (
     <section className="relative min-h-[92vh] flex items-center overflow-hidden bg-foreground">
@@ -55,9 +59,9 @@ export default async function Hero() {
 
           <div className="flex flex-wrap gap-8">
             {[
-              { icon: MapPin, value: "200+", label: t("statsPlaces") },
-              { icon: Star, value: "50+", label: t("statsTours") },
-              { icon: Users, value: "9 700+", label: t("statsReviews") },
+              { icon: MapPin, value: fmt(stats.places), label: t("statsPlaces") },
+              { icon: Star, value: fmt(stats.tours), label: t("statsTours") },
+              { icon: Users, value: fmt(stats.reviews), label: t("statsReviews") },
             ].map(({ icon: Icon, value, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <Icon className="h-4 w-4 text-primary" />

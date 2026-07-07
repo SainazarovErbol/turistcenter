@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { MapPin, Layers, ZoomIn, Mountain } from "lucide-react";
-import { attractions, categoryColors, type Attraction } from "@/data/attractions";
+import { MapPin, Layers, ZoomIn, Mountain, Star, Eye } from "lucide-react";
+import { categoryColors, type Attraction } from "@/data/attractions";
 import { getLocalizedPlace, type AppLocale } from "@/lib/content";
 
 const categoryIcons: Record<string, string> = {
@@ -22,11 +22,16 @@ const categoryMarkerColors: Record<string, string> = {
   culture: "#a855f7",
 };
 
-export default function InteractiveMap() {
+interface Props {
+  places: Attraction[];
+}
+
+export default function InteractiveMap({ places }: Props) {
   const t = useTranslations("map");
   const tCat = useTranslations("categories");
   const locale = useLocale() as AppLocale;
   const reviewsLabel = t("reviews");
+  const viewsLabel = t("views");
 
   const mapContainer = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,10 +121,11 @@ export default function InteractiveMap() {
             "star-intensity": 0.15,
           });
 
-          attractions.forEach((place) => {
+          places.forEach((place) => {
             const localized = getLocalizedPlace(place, locale);
             const color = categoryMarkerColors[place.category] ?? "#3b82f6";
             const icon = categoryIcons[place.category] ?? "📍";
+            const ratingText = place.reviewCount > 0 ? String(place.rating) : "—";
 
             const wrapper = document.createElement("div");
             wrapper.style.cssText = "cursor:pointer;";
@@ -156,10 +162,13 @@ export default function InteractiveMap() {
                   <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#111">${localized.name}</div>
                   <div style="font-size:11px;color:#666;margin-bottom:6px">${localized.region}</div>
                   <div style="font-size:12px;color:#444;line-height:1.4">${localized.description.slice(0, 90)}…</div>
-                  <div style="margin-top:8px;display:flex;align-items:center;gap:4px">
-                    <span style="color:#f59e0b;font-size:12px">★</span>
-                    <span style="font-size:12px;font-weight:600">${place.rating}</span>
-                    <span style="font-size:11px;color:#888">(${place.reviewCount} ${reviewsLabel})</span>
+                  <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="display:flex;align-items:center;gap:3px">
+                      <span style="color:#f59e0b;font-size:12px">★</span>
+                      <span style="font-size:12px;font-weight:600">${ratingText}</span>
+                      ${place.reviewCount > 0 ? `<span style="font-size:11px;color:#888">(${place.reviewCount} ${reviewsLabel})</span>` : ""}
+                    </span>
+                    <span style="font-size:11px;color:#888">${(place.viewCount ?? 0).toLocaleString()} ${viewsLabel}</span>
                   </div>
                 </div>
               `);
@@ -194,7 +203,7 @@ export default function InteractiveMap() {
       setMapLoaded(false);
       setMapError(false);
     };
-  }, [locale, reviewsLabel]);
+  }, [locale, reviewsLabel, viewsLabel, places]);
 
   return (
     <section id="map" className="py-20 bg-muted/30">
@@ -207,8 +216,9 @@ export default function InteractiveMap() {
           <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 relative rounded-xl overflow-hidden border border-border" style={{ height: 500 }}>
+        <div className="space-y-5">
+          {/* Карта на всю ширину */}
+          <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: 480 }}>
             <div ref={mapContainer} style={{ position: "absolute", inset: 0 }} />
 
             <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10 }}>
@@ -251,52 +261,70 @@ export default function InteractiveMap() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Layers className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">{t("placesOnMap")}</span>
+          {/* Список мест — горизонтальный скролл */}
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  {t("placesOnMap")} ({places.length})
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{t("scrollHint")}</span>
             </div>
-            {attractions.map((place) => {
-              const localized = getLocalizedPlace(place, locale);
-              return (
-                <button
-                  key={place.id}
-                  onClick={() => handleSelect(place)}
-                  className={`w-full text-left rounded-xl border p-3 transition-all ${
-                    selected?.id === place.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/30"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      <span className="text-base leading-none mt-0.5">{categoryIcons[place.category]}</span>
-                      <div>
-                        <p className="text-sm font-medium leading-snug">{localized.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{localized.region}</p>
+
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:thin]">
+              {places.map((place) => {
+                const localized = getLocalizedPlace(place, locale);
+                const isSelected = selected?.id === place.id;
+                return (
+                  <button
+                    key={place.id}
+                    onClick={() => handleSelect(place)}
+                    className={`snap-start shrink-0 w-[200px] sm:w-[220px] text-left rounded-xl border p-3 transition-all ${
+                      isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className="text-base leading-none">{categoryIcons[place.category]}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium leading-snug line-clamp-2">{localized.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{localized.region}</p>
                       </div>
                     </div>
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${categoryColors[place.category]}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs mb-2 ${categoryColors[place.category]}`}>
                       {tCat(place.category)}
                     </span>
-                  </div>
-                  {selected?.id === place.id && (
-                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2 pl-6">{localized.description}</p>
-                  )}
-                </button>
-              );
-            })}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-0.5">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        {place.reviewCount > 0 ? place.rating : "—"}
+                        {place.reviewCount > 0 && (
+                          <span className="ml-0.5">({place.reviewCount})</span>
+                        )}
+                      </span>
+                      <span className="flex items-center gap-0.5">
+                        <Eye className="h-3 w-3" />
+                        {(place.viewCount ?? 0).toLocaleString(locale)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {mapLoaded && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            {Object.entries(categoryMarkerColors).map(([cat, color]) => (
-              <div key={cat} className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-full" style={{ background: color }} />
-                <span className="text-xs text-muted-foreground">{tCat(cat as keyof typeof categoryIcons)}</span>
-              </div>
-            ))}
-          </div>
-        )}
+          {mapLoaded && (
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(categoryMarkerColors).map(([cat, color]) => (
+                <div key={cat} className="flex items-center gap-1.5">
+                  <div className="h-3 w-3 rounded-full" style={{ background: color }} />
+                  <span className="text-xs text-muted-foreground">{tCat(cat as keyof typeof categoryIcons)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

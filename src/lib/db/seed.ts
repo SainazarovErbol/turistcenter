@@ -55,6 +55,7 @@ async function main() {
         bestSeason: a.bestSeason,
         difficulty: a.difficulty ?? null,
         facts: a.facts,
+        viewCount: 0,
       }))
     )
     .returning({ id: schema.places.id, slug: schema.places.slug });
@@ -90,6 +91,7 @@ async function main() {
         operator: t.operator,
         category: t.category,
         isSponsored: t.isSponsored ?? false,
+        viewCount: 0,
       }))
     )
     .returning({ id: schema.tours.id, slug: schema.tours.slug });

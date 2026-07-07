@@ -24,7 +24,8 @@
     "subtitle": "Most visited and highest-rated attractions in Kyrgyzstan",
     "viewAll": "All places",
     "viewAllMobile": "All attractions",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "views": "views"
   },
   "tours": {
     "label": "Ready-made routes",
@@ -35,6 +36,7 @@
     "ad": "Ad",
     "details": "Details",
     "reviews": "reviews",
+    "views": "views",
     "ctaTitle": "Are you a tour operator?",
     "ctaSubtitle": "List your tours on TuristCenter.kg and reach thousands of tourists. First 3 months free.",
     "ctaButton": "List your tours"
@@ -45,8 +47,8 @@
     "subtitle": "Genuine reviews from tourists around the world who have visited Kyrgyzstan",
     "avgRating": "Average rating",
     "totalReviews": "Reviews on site",
-    "countries": "Tourist countries",
-    "recommend": "Recommend Kyrgyzstan"
+    "statsPlaces": "Places on site",
+    "statsTours": "Tours on site"
   },
   "footer": {
     "description": "The best guide to Kyrgyzstan. Interactive map, tours and traveler reviews.",
@@ -87,7 +89,9 @@
     "terrain3d": "3D terrain",
     "hint": "Scroll to zoom · Click a marker",
     "placesOnMap": "Places on the map",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "views": "views",
+    "scrollHint": "Scroll right →"
   },
   "categories": {
     "all": "All places",
@@ -109,6 +113,7 @@
     "tryAgain": "Try changing your search or selecting a different category",
     "resetFilters": "Reset filters",
     "reviews": "reviews",
+    "views": "views",
     "backHome": "Back to home",
     "countOne": "place",
     "countFew": "places",
@@ -140,6 +145,7 @@
     "resetFilters": "Reset all filters",
     "perPerson": "/ person",
     "reviews": "reviews",
+    "views": "views",
     "details": "Details",
     "ctaTitle": "Are you a tour operator?",
     "ctaSubtitle": "List your tours on TuristCenter.kg and reach thousands of tourists from Russia, Kazakhstan and Europe. First 3 months free.",
@@ -175,6 +181,8 @@
     "diffMedium": "Moderate",
     "diffHard": "Hard",
     "reviews": "reviews",
+    "views": "views",
+    "noReviewsYet": "No reviews yet",
     "reviewsTitle": "Reviews",
     "writeReview": "Write a review",
     "basedOn": "based on",

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { Search, Star, Clock, BadgeCheck, SlidersHorizontal, ArrowLeft, ChevronDown, Users, Sparkles } from "lucide-react";
+import { Search, Star, Clock, BadgeCheck, SlidersHorizontal, ArrowLeft, ChevronDown, Sparkles, Eye } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { type Tour, type TourCategory } from "@/data/attractions";
@@ -214,12 +214,14 @@ export default function ToursClient({ tours }: Props) {
                   </div>
                 </div>
                 <div className="p-4 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
                     <h2 className="font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{localized.title}</h2>
-                    <div className="flex items-center gap-1 shrink-0 bg-yellow-50 px-2 py-0.5 rounded-md">
-                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-semibold text-yellow-700">{tour.rating}</span>
-                    </div>
+                    {tour.reviewCount > 0 && (
+                      <div className="flex items-center gap-1 shrink-0 bg-yellow-50 px-2 py-0.5 rounded-md">
+                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-semibold text-yellow-700">{tour.rating}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                     <div className="flex items-center gap-1">
@@ -241,8 +243,8 @@ export default function ToursClient({ tours }: Props) {
                   </div>
                   <div className="mt-auto flex items-center justify-between pt-3 border-t border-border">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{tour.reviewCount} {t("reviews")}</span>
+                      <Eye className="h-3 w-3" />
+                      <span>{(tour.viewCount ?? 0).toLocaleString(locale)} {t("views")}</span>
                     </div>
                     <Button size="sm" variant="outline" className="text-xs">{t("details")}</Button>
                   </div>

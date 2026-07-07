@@ -19,6 +19,7 @@ export interface Attraction {
   longDescriptionKy?: string;
   rating: number;
   reviewCount: number;
+  viewCount?: number;
   image: string;
   gallery: string[];
   coordinates: [number, number]; // [lng, lat]
@@ -38,6 +39,7 @@ export interface Tour {
   currency: string;
   rating: number;
   reviewCount: number;
+  viewCount?: number;
   image: string;
   highlights: string[];
   operator: string;

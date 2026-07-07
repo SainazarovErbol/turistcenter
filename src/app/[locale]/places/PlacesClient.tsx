@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Search, Star, MapPin, Clock, SlidersHorizontal, ArrowLeft, ChevronDown } from "lucide-react";
+import { Search, Star, MapPin, Clock, SlidersHorizontal, ArrowLeft, ChevronDown, Eye } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { categoryColors, type Attraction, type Category } from "@/data/attractions";
@@ -160,7 +160,9 @@ export default function PlacesClient({ attractions }: Props) {
                         <h2 className="font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{localized.name}</h2>
                         <div className="flex items-center gap-1 shrink-0 bg-yellow-50 px-2 py-0.5 rounded-md">
                           <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-semibold text-yellow-700">{place.rating}</span>
+                          <span className="text-sm font-semibold text-yellow-700">
+                            {place.reviewCount > 0 ? place.rating : "—"}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
@@ -173,9 +175,15 @@ export default function PlacesClient({ attractions }: Props) {
                           <Clock className="h-3 w-3" />
                           <span>{localized.bestSeason}</span>
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {place.reviewCount.toLocaleString(locale)} {t("reviews")}
-                        </span>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {place.reviewCount > 0 && (
+                            <span>{place.reviewCount.toLocaleString(locale)} {t("reviews")}</span>
+                          )}
+                          <span className="flex items-center gap-0.5">
+                            <Eye className="h-3 w-3" />
+                            {(place.viewCount ?? 0).toLocaleString(locale)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </article>
