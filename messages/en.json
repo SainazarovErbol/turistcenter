@@ -54,9 +54,28 @@
     "forTourists": "For tourists",
     "platform": "Platform",
     "copyright": "© 2026 TuristCenter.kg — All rights reserved",
-    "destinationLinks": ["Issyk-Kul", "Naryn", "Osh", "Bishkek", "Karakol", "Son-Kul"],
-    "touristLinks": ["Getting there", "Visa info", "Best time to visit", "Currency & prices", "Safety"],
-    "platformLinks": ["About us", "List a tour", "For partners", "Blog", "Contact"]
+    "destinationLinks": [
+      "Issyk-Kul",
+      "Naryn",
+      "Osh",
+      "Bishkek",
+      "Karakol",
+      "Son-Kul"
+    ],
+    "touristLinks": [
+      "Getting there",
+      "Visa info",
+      "Best time to visit",
+      "Currency & prices",
+      "Safety"
+    ],
+    "platformLinks": [
+      "About us",
+      "List a tour",
+      "For partners",
+      "Blog",
+      "Contact"
+    ]
   },
   "map": {
     "label": "Explore the country",

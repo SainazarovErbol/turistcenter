@@ -49,8 +49,20 @@ export default function NewPlacePage() {
           />
         </div>
 
-        <TextareaField label="Краткое описание" name="description" placeholder="2–3 предложения о месте" rows={2} required />
-        <TextareaField label="Подробное описание" name="longDescription" placeholder="Полный текст (абзацы разделяются пустой строкой)" rows={6} />
+        {/* Описания по языкам */}
+        <div className="rounded-lg border border-border p-4 space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Краткое описание</p>
+          <TextareaField label="RU — Краткое описание" name="descriptionRu" placeholder="2–3 предложения о месте" rows={2} required />
+          <TextareaField label="EN — Short description" name="description" placeholder="2–3 sentences about the place" rows={2} />
+          <TextareaField label="KY — Кыска сүрөттөмө" name="descriptionKy" placeholder="Жер жөнүндө 2–3 сүйлөм" rows={2} />
+        </div>
+
+        <div className="rounded-lg border border-border p-4 space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Подробное описание</p>
+          <TextareaField label="RU — Подробное описание" name="longDescriptionRu" placeholder="Полный текст на русском" rows={5} />
+          <TextareaField label="EN — Long description" name="longDescription" placeholder="Full description in English" rows={5} />
+          <TextareaField label="KY — Кеңири сүрөттөмө" name="longDescriptionKy" placeholder="Кыргыз тилинде толук текст" rows={5} />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Долгота (Longitude)" name="longitude" type="number" placeholder="77.3" required />

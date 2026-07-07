@@ -8,8 +8,34 @@ function getRuPlace(place: Attraction): LocalizedPlaceFields {
   return {
     name: place.nameRu,
     region: place.region,
+    description: place.descriptionRu ?? place.description,
+    longDescription: place.longDescriptionRu ?? place.longDescription,
+    bestSeason: place.bestSeason,
+    facts: place.facts,
+  };
+}
+
+function getEnPlace(place: Attraction): LocalizedPlaceFields {
+  const staticLocalized = placeTranslations[place.id]?.en;
+  if (staticLocalized) return staticLocalized;
+  return {
+    name: place.name,
+    region: place.region,
     description: place.description,
     longDescription: place.longDescription,
+    bestSeason: place.bestSeason,
+    facts: place.facts,
+  };
+}
+
+function getKyPlace(place: Attraction): LocalizedPlaceFields {
+  const staticLocalized = placeTranslations[place.id]?.ky;
+  if (staticLocalized) return staticLocalized;
+  return {
+    name: place.nameKy ?? place.nameRu,
+    region: place.region,
+    description: place.descriptionKy ?? place.descriptionRu ?? place.description,
+    longDescription: place.longDescriptionKy ?? place.longDescriptionRu ?? place.longDescription,
     bestSeason: place.bestSeason,
     facts: place.facts,
   };
@@ -23,16 +49,36 @@ function getRuTour(tour: Tour): LocalizedTourFields {
   };
 }
 
+function getEnTour(tour: Tour): LocalizedTourFields {
+  const staticLocalized = tourTranslations[tour.id]?.en;
+  if (staticLocalized) return staticLocalized;
+  return {
+    title: tour.titleEn ?? tour.title,
+    duration: tour.duration,
+    highlights: tour.highlights,
+  };
+}
+
+function getKyTour(tour: Tour): LocalizedTourFields {
+  const staticLocalized = tourTranslations[tour.id]?.ky;
+  if (staticLocalized) return staticLocalized;
+  return {
+    title: tour.titleKy ?? tour.title,
+    duration: tour.duration,
+    highlights: tour.highlights,
+  };
+}
+
 export function getLocalizedPlace(place: Attraction, locale: AppLocale): LocalizedPlaceFields {
   if (locale === "ru") return getRuPlace(place);
-  const localized = placeTranslations[place.id]?.[locale];
-  return localized ?? getRuPlace(place);
+  if (locale === "en") return getEnPlace(place);
+  return getKyPlace(place);
 }
 
 export function getLocalizedTour(tour: Tour, locale: AppLocale): LocalizedTourFields {
   if (locale === "ru") return getRuTour(tour);
-  const localized = tourTranslations[tour.id]?.[locale];
-  return localized ?? getRuTour(tour);
+  if (locale === "en") return getEnTour(tour);
+  return getKyTour(tour);
 }
 
 export function getPlaceSearchText(place: Attraction, locale: AppLocale): string {

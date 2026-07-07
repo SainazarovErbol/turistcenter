@@ -30,7 +30,12 @@ export default function NewTourPage() {
           />
         </div>
 
-        <Field label="Название тура" name="title" placeholder="Иссык-Куль Классик" required />
+        <div className="rounded-lg border border-border p-4 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Название тура</p>
+          <Field label="RU — Название" name="title" placeholder="Иссык-Куль Классик" required />
+          <Field label="EN — Title" name="titleEn" placeholder="Issyk-Kul Classic" />
+          <Field label="KY — Аталышы" name="titleKy" placeholder="Ысык-Көл Классик" />
+        </div>
 
         <div className="grid grid-cols-3 gap-4">
           <Field label="Длительность (текст)" name="duration" placeholder="7 дней" required />

@@ -40,13 +40,17 @@ export const places = pgTable(
   {
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 100 }).notNull().unique(),
-    name: varchar("name", { length: 200 }).notNull(),
-    nameRu: varchar("name_ru", { length: 200 }).notNull(),
-    nameKy: varchar("name_ky", { length: 200 }),
+    name: varchar("name", { length: 200 }).notNull(),       // EN
+    nameRu: varchar("name_ru", { length: 200 }).notNull(),  // RU
+    nameKy: varchar("name_ky", { length: 200 }),            // KY
     region: varchar("region", { length: 200 }).notNull(),
     category: categoryEnum("category").notNull(),
-    description: text("description").notNull(),
-    longDescription: text("long_description"),
+    description: text("description").notNull(),             // EN (основной)
+    descriptionRu: text("description_ru"),                  // RU
+    descriptionKy: text("description_ky"),                  // KY
+    longDescription: text("long_description"),              // EN
+    longDescriptionRu: text("long_description_ru"),         // RU
+    longDescriptionKy: text("long_description_ky"),         // KY
     rating: real("rating").notNull().default(0),
     reviewCount: integer("review_count").notNull().default(0),
     imageUrl: text("image_url"),
@@ -74,7 +78,9 @@ export const tours = pgTable(
   {
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 100 }).notNull().unique(),
-    title: varchar("title", { length: 300 }).notNull(),
+    title: varchar("title", { length: 300 }).notNull(),     // RU (основной)
+    titleEn: varchar("title_en", { length: 300 }),          // EN
+    titleKy: varchar("title_ky", { length: 300 }),          // KY
     duration: varchar("duration", { length: 50 }).notNull(),
     durationDays: integer("duration_days").notNull(),
     price: integer("price").notNull(),

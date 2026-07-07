@@ -67,19 +67,26 @@ export async function deletePlace(id: number) {
 export async function addPlace(formData: FormData) {
   const slug = (formData.get("slug") as string).trim().toLowerCase().replace(/\s+/g, "-");
 
+  const getString = (key: string) => (formData.get(key) as string ?? "").trim();
+
   await db.insert(places).values({
     slug,
-    name: (formData.get("name") as string).trim(),
-    nameRu: (formData.get("nameRu") as string).trim(),
-    region: (formData.get("region") as string).trim(),
-    category: formData.get("category") as "nature" | "history" | "sport" | "culture" | "lake",
-    description: (formData.get("description") as string).trim(),
-    longDescription: (formData.get("longDescription") as string).trim(),
-    imageUrl: (formData.get("imageUrl") as string).trim() || null,
-    longitude: parseFloat(formData.get("longitude") as string),
-    latitude: parseFloat(formData.get("latitude") as string),
-    bestSeason: (formData.get("bestSeason") as string).trim() || null,
-    difficulty: (formData.get("difficulty") as string) as "easy" | "medium" | "hard" | null || null,
+    name: getString("name") || getString("nameRu"),
+    nameRu: getString("nameRu"),
+    nameKy: getString("nameKy") || null,
+    region: getString("region"),
+    category: getString("category") as "nature" | "history" | "sport" | "culture" | "lake",
+    description: getString("description") || getString("descriptionRu"),
+    descriptionRu: getString("descriptionRu") || null,
+    descriptionKy: getString("descriptionKy") || null,
+    longDescription: getString("longDescription") || null,
+    longDescriptionRu: getString("longDescriptionRu") || null,
+    longDescriptionKy: getString("longDescriptionKy") || null,
+    imageUrl: getString("imageUrl") || null,
+    longitude: parseFloat(getString("longitude")),
+    latitude: parseFloat(getString("latitude")),
+    bestSeason: getString("bestSeason") || null,
+    difficulty: (getString("difficulty") || null) as "easy" | "medium" | "hard" | null,
     rating: 0,
     reviewCount: 0,
     gallery: [],
@@ -107,19 +114,23 @@ export async function addTour(formData: FormData) {
   const highlightsRaw = (formData.get("highlights") as string).trim();
   const highlights = highlightsRaw.split("\n").map((h) => h.trim()).filter(Boolean);
 
+  const getStr = (key: string) => (formData.get(key) as string ?? "").trim();
+
   await db.insert(tours).values({
     slug,
-    title: (formData.get("title") as string).trim(),
-    duration: (formData.get("duration") as string).trim(),
-    durationDays: parseInt(formData.get("durationDays") as string, 10),
-    price: parseInt(formData.get("price") as string, 10),
+    title: getStr("title"),
+    titleEn: getStr("titleEn") || null,
+    titleKy: getStr("titleKy") || null,
+    duration: getStr("duration"),
+    durationDays: parseInt(getStr("durationDays"), 10),
+    price: parseInt(getStr("price"), 10),
     currency: "USD",
     rating: 0,
     reviewCount: 0,
-    imageUrl: (formData.get("imageUrl") as string).trim() || null,
+    imageUrl: getStr("imageUrl") || null,
     highlights,
-    operator: (formData.get("operator") as string).trim() || null,
-    category: formData.get("category") as "adventure" | "cultural" | "relaxation" | "trekking" | "family",
+    operator: getStr("operator") || null,
+    category: getStr("category") as "adventure" | "cultural" | "relaxation" | "trekking" | "family",
     isSponsored: formData.get("isSponsored") === "on",
     isPublished: true,
   });

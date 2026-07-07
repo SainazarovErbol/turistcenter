@@ -1,14 +1,22 @@
 export type Category = "nature" | "history" | "sport" | "culture" | "lake";
 export type TourDuration = "short" | "medium" | "long"; // 1-5 / 6-9 / 10+
 
+import { extraAttractions } from "./places-extended";
+import { extraTours } from "./tours-extended";
+
 export interface Attraction {
   id: string;
   name: string;
   nameRu: string;
+  nameKy?: string;
   region: string;
   category: Category;
   description: string;
+  descriptionRu?: string;
+  descriptionKy?: string;
   longDescription: string;
+  longDescriptionRu?: string;
+  longDescriptionKy?: string;
   rating: number;
   reviewCount: number;
   image: string;
@@ -22,6 +30,8 @@ export interface Attraction {
 export interface Tour {
   id: string;
   title: string;
+  titleEn?: string;
+  titleKy?: string;
   duration: string;
   durationDays: number;
   price: number;
@@ -45,7 +55,7 @@ export const tourCategoryLabels: Record<TourCategory, string> = {
   family: "Семейный",
 };
 
-export const attractions: Attraction[] = [
+const baseAttractions: Attraction[] = [
   {
     id: "issyk-kul",
     name: "Issyk-Kul Lake",
@@ -214,7 +224,9 @@ export const attractions: Attraction[] = [
   },
 ];
 
-export const tours: Tour[] = [
+export const attractions: Attraction[] = [...baseAttractions, ...extraAttractions];
+
+const baseTours: Tour[] = [
   {
     id: "issyk-kul-classic",
     title: "Иссык-Куль Классик",
@@ -330,6 +342,8 @@ export const tours: Tour[] = [
     category: "trekking",
   },
 ];
+
+export const tours: Tour[] = [...baseTours, ...extraTours];
 
 export const categoryLabels: Record<Category, string> = {
   nature: "Природа",
